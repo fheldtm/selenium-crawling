@@ -102,8 +102,14 @@ const findCafeArticle = async (page = 1) => {
             ].join('\n')
           })
           .join('\n\n');
-        const original_text = fs.readFileSync('./result/total_items.txt', 'utf-8');
-        fs.writeFileSync('./result/total_items.txt', [text, original_text].join('\n\n'), 'utf-8')
+        if (!fs.existsSync('./result')) {
+          fs.mkdirSync('./result', { recursive: true });
+        }
+        const original_text = fs.readFile('./result/total_items.txt', 'utf-8', (err, data) => {
+          if (err) return '';
+          return '\n\n' + data;
+        });
+        fs.writeFileSync('./result/total_items.txt', [text, original_text].join(''), 'utf-8')
         console.log('새로운 거래글이 있습니다.');
       } else {
         console.log('조건에 맞는 새로운 거래글이 없습니다.');
