@@ -11,6 +11,7 @@ const MAX_PRICE = 700000;
 const MIN_PRICE = 150000;
 const FILTER_TITLE_LIST = [
   '삽니다',
+  '어린이'
 ]
 
 const getNaverCafeAritlceId = url => {
@@ -71,6 +72,7 @@ const findCafeArticle = async (page = 1) => {
     const is_terminate_article = items.some(({ article_id }) => Number(article_id) <= Number(last_article_id));
     
     items = items
+      .filter(({ status }) => status === 1)
       .filter(({ article_id }) => article_id != null && Number(last_article_id) < Number(article_id)) // last_article_id 와 비교해서 필터링
       .filter(({ price }) => price <= MAX_PRICE && price >= MIN_PRICE)
       .filter(({ title }) => !FILTER_TITLE_LIST.some(keyword => new RegExp(keyword, 'g').test(title)))
@@ -80,26 +82,32 @@ const findCafeArticle = async (page = 1) => {
 
     // article_id 비교해서 최근 아이디보다 작은 게시글이 있을 경우 종료
     if (is_terminate_article) {
-      const maxId = Math.max(...total_items.map(({ article_id }) => Number(article_id)));
+      // 새로 검색된 item이 있을 경우
       // 종료 전에 last_article_id.txt 업데이트
-      fs.writeFileSync('./last_article_id.txt', `article=${maxId}`, 'utf-8')
+      if (total_items.length !== 0) {
+        const maxId = Math.max(...total_items.map(({ article_id }) => Number(article_id)));
+        fs.writeFileSync('./.last_article_id.txt', `article=${maxId}`, 'utf-8')
 
-      // total_items 파일에 저장
-      const text = total_items
-        .map(({ article_id, title, price, time, status }) => {
-          return [
-            `게시글 ID: ${article_id}`,
-            `제목: ${title}`,
-            `가격: ${price}`,
-            `일시: ${new Date().toISOString().slice(0,10)} ${time}`,
-            `상태: ${status}`,
-            `바로가기: https://cafe.naver.com/joonggonara/${article_id}`,
-            '',
-            `--------`
-          ].join('\n')
-        })
-        .join('\n\n');
-      fs.writeFileSync('./result/total_items.txt', text, 'utf-8')
+        // total_items 파일에 저장
+        const text = total_items
+          .map(({ article_id, title, price, time }) => {
+            return [
+              `게시글 ID: ${article_id}`,
+              `제목: ${title}`,
+              `가격: ${price}`,
+              `일시: ${new Date().toISOString().slice(0,10)} ${time}`,
+              `바로가기: https://cafe.naver.com/joonggonara/${article_id}`,
+              '',
+              `--------`
+            ].join('\n')
+          })
+          .join('\n\n');
+        const original_text = fs.readFileSync('./result/total_items.txt', 'utf-8');
+        fs.writeFileSync('./result/total_items.txt', [text, original_text].join('\n\n'), 'utf-8')
+        console.log('새로운 거래글이 있습니다.');
+      } else {
+        console.log('조건에 맞는 새로운 거래글이 없습니다.');
+      }
 
       // 종료
       driver.quit();
