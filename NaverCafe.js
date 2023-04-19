@@ -19,7 +19,7 @@ const getNaverCafeAritlceId = url => {
 }
 
 const findLastArticleId = () => {
-  const content = fs.readFileSync('last_article_id.txt', 'utf8')
+  const content = fs.readFileSync('./.last_article_id.txt', 'utf8')
   last_article_id = content.split('=')[1];
 }
 
