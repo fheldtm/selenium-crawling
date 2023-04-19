@@ -3,8 +3,8 @@ const webdriver = require('selenium-webdriver');
 const { By } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const options = new chrome.Options();
-// options.addArguments('headless');
-// options.addArguments('disable-gpu');
+options.addArguments('headless');
+options.addArguments('disable-gpu');
 
 let driver, last_article_id;
 const MAX_PRICE = 700000;
@@ -99,7 +99,7 @@ const findCafeArticle = async (page = 1) => {
           ].join('\n')
         })
         .join('\n\n');
-      fs.writeFileSync('./total_items.txt', text, 'utf-8')
+      fs.writeFileSync('./result/total_items.txt', text, 'utf-8')
 
       // 종료
       driver.quit();
